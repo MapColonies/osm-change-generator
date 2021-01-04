@@ -1,8 +1,8 @@
 {
-  "name": "@map-colonies/ts-npm-package-boilerplate",
+  "name": "@map-colonies/osm-change-generator",
   "version": "1.0.0",
-  "description": "TypeScript and JavaScript classes for osm elements",
-  "main": "./src/index.ts",
+  "description": "A library for creating osm changes based on varied input",
+  "main": "./dist/index.js",
   "scripts": {
     "test:unit": "jest --config=./tests/configurations/unit/jest.config.js",
     "test:integration": "jest --config=./tests/configurations/integration/jest.config.js",
@@ -20,12 +20,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MapColonies/ts-npm-package-boilerplate.git"
+    "url": "git+https://github.com/MapColonies/osm-change-generator.git"
   },
   "author": "MapColonies",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/MapColonies/ts-npm-package-boilerplate/issues"
+    "url": "https://github.com/MapColonies/osm-change-generator/issues"
   },
   "husky": {
     "hooks": {
@@ -35,7 +35,7 @@
   "files": [
     "dist/**/*"
   ],
-  "homepage": "https://github.com/MapColonies/ts-npm-package-boilerplate#readme",
+  "homepage": "https://github.com/MapColonies/osm-change-generator#readme",
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",

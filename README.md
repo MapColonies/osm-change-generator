@@ -1,3 +1,3 @@
-# ts-npm-package-boilerplate
+# osm-change-generator
 
-ts-npm-package-boilerplate
+This package contains the logic to create osm changes from geojson, and previous version of the entity.
