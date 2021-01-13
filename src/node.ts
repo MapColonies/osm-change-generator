@@ -22,7 +22,7 @@ export const createNodeFromPoint = (point: OsmPoint, oldNode?: OsmNode): OsmNode
 
 export const createChangeFromNode = (action: Actions, node: OsmNode): OsmChange => {
   const change = createEmptyChange();
-  
+
   change[action]?.push(node);
 
   return change;

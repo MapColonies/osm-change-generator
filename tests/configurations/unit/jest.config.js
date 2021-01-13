@@ -16,7 +16,7 @@ module.exports = {
       branches: 80,
       functions: 80,
       lines: 80,
-      statments: -10
-    }
-  }
+      statments: -10,
+    },
+  },
 };

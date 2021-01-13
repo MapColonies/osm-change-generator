@@ -14,21 +14,21 @@ expect.extend({
     if (change.create.length !== createLength) {
       return {
         message: () => `expected create length to be ${createLength}, received: ${change.create.length}`,
-        pass: false
+        pass: false,
       };
     }
     if (change.modify.length !== modifyLength) {
       return {
         message: () => `expected modify length to be ${modifyLength}, received: ${change.modify.length}`,
-        pass: false
+        pass: false,
       };
     }
     if (change.delete.length !== deleteLength) {
       return {
         message: () => `expected delete length to be ${deleteLength}, received: ${change.delete.length}`,
-        pass: false
+        pass: false,
       };
     }
-    return {pass: true}
+    return { pass: true };
   },
 });

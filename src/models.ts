@@ -1,5 +1,5 @@
-import { BaseElement } from "@map-colonies/node-osm-elements";
-import { Feature, LineString, Point, Polygon } from "geojson";
+import { BaseElement } from '@map-colonies/node-osm-elements';
+import { Feature, LineString, Point, Polygon } from 'geojson';
 
 export type Tags = Record<string, string> | undefined;
 export type OsmPoint = Feature<Point, Tags>;

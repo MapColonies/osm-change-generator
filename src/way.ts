@@ -28,7 +28,7 @@ const createWayNodes = (coordinates: Position[], idGenerator: IdGenerator, oldWa
   const isWayClosed = isFeatureCoordinatesClosed(coordinates);
 
   // calculate the number of nodes to loop over
-  const coordinatesToAdd = isWayClosed? coordinates.length - 1: coordinates.length;
+  const coordinatesToAdd = isWayClosed ? coordinates.length - 1 : coordinates.length;
 
   for (let i = 0; i < coordinatesToAdd; i++) {
     const [lon, lat] = coordinates[i];
@@ -71,7 +71,7 @@ export const createChangeFromWay = (action: Actions, way: OsmWay, orphanNodes: O
 
   // check if way is closed
   const nodesToAddNumber = isWayClosed(nodes) ? nodes.length - 1 : nodes.length;
-  
+
   for (let i = 0; i < nodesToAddNumber; i++) {
     const node = nodes[i];
 
@@ -89,7 +89,7 @@ export const createChangeFromWay = (action: Actions, way: OsmWay, orphanNodes: O
         node.id = orphanedNode.id;
         node.version = orphanedNode.version;
         change.modify?.push(node);
-      } else {        
+      } else {
         change.create?.push(node);
       }
     }
