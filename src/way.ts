@@ -70,8 +70,8 @@ export const createChangeFromWay = (action: Actions, way: OsmWay, orphanNodes: O
   const nodes = way.nodes;
 
   // check if way is closed
-  const nodesToAddNumber = isWayClosed(nodes) ? nodes.length : nodes.length - 1;
-
+  const nodesToAddNumber = isWayClosed(nodes) ? nodes.length - 1 : nodes.length;
+  
   for (let i = 0; i < nodesToAddNumber; i++) {
     const node = nodes[i];
 
@@ -87,9 +87,9 @@ export const createChangeFromWay = (action: Actions, way: OsmWay, orphanNodes: O
       if (orphanNodes.length > 0) {
         const orphanedNode = orphanNodes.pop() as OsmNode;
         node.id = orphanedNode.id;
-        node.version = orphanedNode.id;
+        node.version = orphanedNode.version;
         change.modify?.push(node);
-      } else {
+      } else {        
         change.create?.push(node);
       }
     }

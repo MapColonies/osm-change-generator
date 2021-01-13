@@ -7,7 +7,6 @@ import { createChangeFromWay, createWay } from './way';
 interface GetChangeCreate<T1 extends Feature<Geometry, Tags>> {
   action: Actions.CREATE,
   feature: T1
-  oldElement: undefined
 }
 
 interface GetChangeModify<T1 extends Feature<Geometry, Tags>, T2 extends BaseElement> {
@@ -24,18 +23,29 @@ interface GetChangeDelete<T2 extends BaseElement,> {
 type GetChangeArgs<T1 extends Feature<Geometry, Tags>, T2 extends BaseElement> = GetChangeCreate<T1> | GetChangeModify<T1, T2> | GetChangeDelete<T2>
 
 
-export const getChangeFromLineOrPolygon = (args: GetChangeArgs<OsmLine | OsmPolygon, OsmWay>): OsmChange => {
+export const getChangeFromLine = (args: GetChangeArgs<OsmLine, OsmWay>): OsmChange => {
   if (args.action === Actions.DELETE) {
     return createChangeFromWay(Actions.DELETE, args.oldElement, [])
   }
-  const [way, orphandedNodes] = createWay(args.feature, args.oldElement);
+  const element = args.action !== Actions.CREATE ? args.oldElement : undefined;
+  const [way, orphandedNodes] = createWay(args.feature, element);
   return createChangeFromWay(args.action, way, orphandedNodes);
 };
 
-export const createChangeFromPoint = (args: GetChangeArgs<OsmPoint, OsmNode>): OsmChange => {
+export const getChangeFromPolygon = (args: GetChangeArgs<OsmPolygon, OsmWay>): OsmChange => {
+  if (args.action === Actions.DELETE) {
+    return createChangeFromWay(Actions.DELETE, args.oldElement, [])
+  }
+  const element = args.action !== Actions.CREATE ? args.oldElement : undefined;
+  const [way, orphandedNodes] = createWay(args.feature, element);
+  return createChangeFromWay(args.action, way, orphandedNodes);
+};
+
+export const getChangeFromPoint = (args: GetChangeArgs<OsmPoint, OsmNode>): OsmChange => {
   if (args.action === Actions.DELETE) {
     return createChangeFromNode(Actions.DELETE, args.oldElement)
   }
-  const node = createNodeFromPoint(args.feature, args.oldElement);
+  const element = args.action !== Actions.CREATE ? args.oldElement : undefined;
+  const node = createNodeFromPoint(args.feature, element);
   return createChangeFromNode(args.action, node);
 };

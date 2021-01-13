@@ -5,6 +5,7 @@ module.exports = {
   testMatch: ['<rootDir>/tests/unit/**/*.spec.ts'],
   rootDir: '../../../.',
   setupFiles: ['<rootDir>/tests/configurations/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/tests/unit/matchers.js'],
   preset: 'ts-jest',
   testEnvironment: 'node',
   collectCoverage: true,
