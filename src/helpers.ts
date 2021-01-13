@@ -1,4 +1,4 @@
-import { OsmChange, OsmNode, OsmWay } from '@map-colonies/node-osm-elements';
+import { OsmChange } from '@map-colonies/node-osm-elements';
 import { Feature, LineString, Polygon, Position } from 'geojson';
 import { generatorName } from './constants';
 import { Tags } from './models';

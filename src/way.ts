@@ -2,7 +2,7 @@ import { OsmWay, OsmNode, OsmChange } from '@map-colonies/node-osm-elements';
 import { Feature, Polygon, LineString, Position } from 'geojson';
 import { isFeatureCoordinatesClosed, createEmptyChange, extractCoordinates } from './helpers';
 import { IdGenerator } from './idGenerator';
-import { Tags, Actions, OsmLine, OsmPolygon } from './models';
+import { Tags, Actions } from './models';
 import { createNode } from './node';
 
 export const createWay = <T extends Feature<Polygon | LineString, Tags>>(feature: T, oldWay?: OsmWay): [OsmWay, OsmNode[]] => {
