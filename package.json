@@ -39,7 +39,7 @@
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
-    "@map-colonies/eslint-config": "^2.0.0",
+    "@map-colonies/eslint-config": "^2.1.0",
     "@map-colonies/node-osm-elements": "^2.0.1",
     "@types/geojson": "^7946.0.7",
     "@types/jest": "^26.0.19",
