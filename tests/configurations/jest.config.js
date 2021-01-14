@@ -2,10 +2,10 @@ module.exports = {
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
-  testMatch: ['<rootDir>/tests/unit/**/*.spec.ts'],
-  rootDir: '../../../.',
+  testMatch: ['<rootDir>/tests/**/*.spec.ts'],
+  rootDir: '../../.',
   setupFiles: ['<rootDir>/tests/configurations/jest.setup.js'],
-  setupFilesAfterEnv: ['<rootDir>/tests/unit/matchers.js'],
+  setupFilesAfterEnv: ['<rootDir>/tests/matchers.js'],
   preset: 'ts-jest',
   testEnvironment: 'node',
   collectCoverage: true,

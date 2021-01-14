@@ -1,6 +1,6 @@
 import { BaseElement, OsmNode, OsmWay } from '@map-colonies/node-osm-elements';
-import { getChangeFromLine, getChangeFromPoint, getChangeFromPolygon } from '../../src';
-import { Actions, FlattenedGeoJSONLine, FlattenedGeoJSONPoint, FlattenedGeoJSONPolygon } from '../../src/models';
+import { getChangeFromLine, getChangeFromPoint, getChangeFromPolygon } from '../src';
+import { Actions, FlattenedGeoJSONLine, FlattenedGeoJSONPoint, FlattenedGeoJSONPolygon } from '../src/models';
 
 describe('index', function () {
   describe('#getChangeFromPoint', function () {
