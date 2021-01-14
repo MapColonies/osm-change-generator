@@ -20,3 +20,8 @@ export const isFeatureCoordinatesClosed = (coordinates: Position[]): boolean => 
 
 export const extractCoordinates = (feature: Feature<Polygon | LineString, Tags>): Position[] =>
   feature.geometry.type === 'Polygon' ? feature.geometry.coordinates[0] : feature.geometry.coordinates;
+
+export const replaceChangeGenerator = (change: OsmChange, generatorValue: string): OsmChange => {
+  change.generator = generatorValue;
+  return change;
+};

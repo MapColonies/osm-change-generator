@@ -1,23 +1,24 @@
 import { BaseElement, OsmNode, OsmWay } from '@map-colonies/node-osm-elements';
 import { getChangeFromLine, getChangeFromPoint, getChangeFromPolygon } from '../../src';
-import { Actions, OsmLine, OsmPoint, OsmPolygon } from '../../src/models';
+import { Actions, FlattenedGeoJSONLine, FlattenedGeoJSONPoint, FlattenedGeoJSONPolygon } from '../../src/models';
 
 describe('index', function () {
   describe('#getChangeFromPoint', function () {
     it('should add a node to the create part of the change', function () {
-      const point: OsmPoint = { geometry: { type: 'Point', coordinates: [18, 17] }, type: 'Feature', properties: { dog: 'meow' } };
+      const point: FlattenedGeoJSONPoint = { geometry: { type: 'Point', coordinates: [18, 17] }, type: 'Feature', properties: { dog: 'meow' } };
       const expectedNode = { type: 'node', lon: point.geometry.coordinates[0], lat: point.geometry.coordinates[1], tags: { dog: 'meow' } };
 
-      const change = getChangeFromPoint({ action: Actions.CREATE, feature: point });
+      const change = getChangeFromPoint({ action: Actions.CREATE, feature: point, generatorValue: 'test' });
 
       expect(change).toHaveChangeActionLengths(1, 0, 0);
-      const node = (change.create as BaseElement[])[0] as OsmNode;
+      expect(change).toHaveProperty('generator', 'test');
+      const node = (change.create as BaseElement[])[0];
       expect(node.id).toBeLessThan(0);
       expect(node).toMatchObject(expectedNode);
     });
 
     it('should add a node to the modify part of the change', function () {
-      const point: OsmPoint = { geometry: { type: 'Point', coordinates: [18, 17] }, type: 'Feature', properties: { dog: 'meow' } };
+      const point: FlattenedGeoJSONPoint = { geometry: { type: 'Point', coordinates: [18, 17] }, type: 'Feature', properties: { dog: 'meow' } };
       const oldNode: OsmNode = { id: 1, lat: 20, lon: 21, type: 'node', tags: { cat: 'bark' }, version: 2 };
       const expectedNode = {
         type: 'node',
@@ -31,7 +32,7 @@ describe('index', function () {
       const change = getChangeFromPoint({ action: Actions.MODIFY, feature: point, oldElement: oldNode });
 
       expect(change).toHaveChangeActionLengths(0, 1, 0);
-      const node = (change.modify as BaseElement[])[0] as OsmNode;
+      const node = (change.modify as BaseElement[])[0];
       expect((node.tags as Record<string, string>)['cat']).toBeUndefined();
       expect(node).toMatchObject(expectedNode);
     });
@@ -42,15 +43,15 @@ describe('index', function () {
       const change = getChangeFromPoint({ action: Actions.DELETE, oldElement: node });
 
       expect(change).toHaveChangeActionLengths(0, 0, 1);
-      const deletedNode = (change.delete as BaseElement[])[0] as OsmNode;
+      const deletedNode = (change.delete as BaseElement[])[0];
       expect(deletedNode.type).toEqual('node');
       expect(deletedNode).toMatchObject(node);
     });
   });
 
   describe('#getChangeFromLine', function () {
-    it('create a way with all its points', function () {
-      const line: OsmLine = {
+    it('should create a way with all its points', function () {
+      const line: FlattenedGeoJSONLine = {
         type: 'Feature',
         properties: { dog: 'meow' },
         geometry: {
@@ -63,9 +64,10 @@ describe('index', function () {
         },
       };
 
-      const change = getChangeFromLine({ action: Actions.CREATE, feature: line });
+      const change = getChangeFromLine({ action: Actions.CREATE, feature: line, generatorValue: 'test' });
 
       expect(change).toHaveChangeActionLengths(line.geometry.coordinates.length + 1, 0, 0);
+      expect(change).toHaveProperty('generator', 'test');
 
       const way = change.create?.find((elm) => elm.type === 'way') as OsmWay;
       expect(way).toBeDefined();
@@ -89,7 +91,7 @@ describe('index', function () {
     });
 
     it('should create a way, and the unique nodes, if line is closed', function () {
-      const line: OsmLine = {
+      const line: FlattenedGeoJSONLine = {
         type: 'Feature',
         properties: { dog: 'meow' },
         geometry: {
@@ -150,7 +152,7 @@ describe('index', function () {
     });
 
     it('should only modify the way tags if only tags were changed', function () {
-      const line: OsmLine = {
+      const line: FlattenedGeoJSONLine = {
         type: 'Feature',
         properties: { dog: 'meow' },
         geometry: {
@@ -182,7 +184,7 @@ describe('index', function () {
     });
 
     it('should only change the order of the nodes', function () {
-      const line: OsmLine = {
+      const line: FlattenedGeoJSONLine = {
         type: 'Feature',
         properties: { dog: 'meow' },
         geometry: {
@@ -213,7 +215,7 @@ describe('index', function () {
     });
 
     it('should add a new node and modify the way', function () {
-      const line: OsmLine = {
+      const line: FlattenedGeoJSONLine = {
         type: 'Feature',
         properties: { dog: 'meow' },
         geometry: {
@@ -248,7 +250,7 @@ describe('index', function () {
     });
 
     it('should modify an existing node when a point in line is changed', function () {
-      const line: OsmLine = {
+      const line: FlattenedGeoJSONLine = {
         type: 'Feature',
         properties: { dog: 'meow' },
         geometry: {
@@ -281,7 +283,7 @@ describe('index', function () {
     });
 
     it('should only change the order of the nodes when order is changed', function () {
-      const line: OsmLine = {
+      const line: FlattenedGeoJSONLine = {
         type: 'Feature',
         properties: { dog: 'meow' },
         geometry: {
@@ -314,7 +316,7 @@ describe('index', function () {
     });
 
     it('should delete the node when a position is removed', function () {
-      const line: OsmLine = {
+      const line: FlattenedGeoJSONLine = {
         type: 'Feature',
         properties: { dog: 'meow' },
         geometry: {
@@ -350,8 +352,8 @@ describe('index', function () {
   });
 
   describe('#getChangeFromPolygon', function () {
-    it('create a way with all its points', function () {
-      const polygon: OsmPolygon = {
+    it('should create a way with all its points', function () {
+      const polygon: FlattenedGeoJSONPolygon = {
         type: 'Feature',
         properties: { dog: 'meow' },
         geometry: {
@@ -367,9 +369,10 @@ describe('index', function () {
         },
       };
 
-      const change = getChangeFromPolygon({ action: Actions.CREATE, feature: polygon });
+      const change = getChangeFromPolygon({ action: Actions.CREATE, feature: polygon, generatorValue: 'test' });
 
       expect(change).toHaveChangeActionLengths(polygon.geometry.coordinates[0].length, 0, 0);
+      expect(change).toHaveProperty('generator', 'test');
 
       const way = change.create?.find((elm) => elm.type === 'way') as OsmWay;
       expect(way).toBeDefined();
@@ -423,7 +426,7 @@ describe('index', function () {
     });
 
     it('should only modify the way tags if only tags were changed', function () {
-      const polygon: OsmPolygon = {
+      const polygon: FlattenedGeoJSONPolygon = {
         type: 'Feature',
         properties: { dog: 'meow' },
         geometry: {
@@ -457,7 +460,7 @@ describe('index', function () {
     });
 
     it('should only change the order of the nodes', function () {
-      const line: OsmPolygon = {
+      const line: FlattenedGeoJSONPolygon = {
         type: 'Feature',
         properties: { dog: 'meow' },
         geometry: {
@@ -494,7 +497,7 @@ describe('index', function () {
     });
 
     it('should add a new node and modify the way', function () {
-      const line: OsmPolygon = {
+      const line: FlattenedGeoJSONPolygon = {
         type: 'Feature',
         properties: { dog: 'meow' },
         geometry: {
@@ -535,7 +538,7 @@ describe('index', function () {
     });
 
     it('should modify an existing node when a point in polygon is changed', function () {
-      const line: OsmPolygon = {
+      const line: FlattenedGeoJSONPolygon = {
         type: 'Feature',
         properties: { dog: 'meow' },
         geometry: {
@@ -575,7 +578,7 @@ describe('index', function () {
     });
 
     it('should only change the order of the nodes when order is changed', function () {
-      const line: OsmPolygon = {
+      const line: FlattenedGeoJSONPolygon = {
         type: 'Feature',
         properties: { dog: 'meow' },
         geometry: {
@@ -614,7 +617,7 @@ describe('index', function () {
     });
 
     it('should delete the node when a position is removed', function () {
-      const line: OsmPolygon = {
+      const line: FlattenedGeoJSONPolygon = {
         type: 'Feature',
         properties: { dog: 'meow' },
         geometry: {

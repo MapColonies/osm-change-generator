@@ -2,9 +2,9 @@ import { BaseElement } from '@map-colonies/node-osm-elements';
 import { Feature, LineString, Point, Polygon } from 'geojson';
 
 export type Tags = Record<string, string> | undefined;
-export type OsmPoint = Feature<Point, Tags>;
-export type OsmLine = Feature<LineString, Tags>;
-export type OsmPolygon = Feature<Polygon, Tags>;
+export type FlattenedGeoJSONPoint = Feature<Point, Tags>;
+export type FlattenedGeoJSONLine = Feature<LineString, Tags>;
+export type FlattenedGeoJSONPolygon = Feature<Polygon, Tags>;
 
 export interface CreateNodeArgs {
   lon: number;
