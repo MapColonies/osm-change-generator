@@ -33,8 +33,8 @@ export const getChangeFromLine = (args: GetChangeArgs<FlattenedGeoJSONLine, OsmW
     change = createChangeFromWay(Actions.DELETE, args.oldElement, []);
   } else {
     const element = args.action !== Actions.CREATE ? args.oldElement : undefined;
-    const [way, orphandedNodes] = createWay(args.feature, element);
-    change = createChangeFromWay(args.action, way, orphandedNodes);
+    const [way, orphanNodes] = createWay(args.feature, element);
+    change = createChangeFromWay(args.action, way, orphanNodes);
   }
 
   return args.generatorValue !== undefined ? replaceChangeGenerator(change, args.generatorValue) : change;
@@ -47,8 +47,8 @@ export const getChangeFromPolygon = (args: GetChangeArgs<FlattenedGeoJSONPolygon
     change = createChangeFromWay(Actions.DELETE, args.oldElement, []);
   } else {
     const element = args.action !== Actions.CREATE ? args.oldElement : undefined;
-    const [way, orphandedNodes] = createWay(args.feature, element);
-    change = createChangeFromWay(args.action, way, orphandedNodes);
+    const [way, orphanNodes] = createWay(args.feature, element);
+    change = createChangeFromWay(args.action, way, orphanNodes);
   }
 
   return args.generatorValue !== undefined ? replaceChangeGenerator(change, args.generatorValue) : change;
