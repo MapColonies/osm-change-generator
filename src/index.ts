@@ -5,26 +5,31 @@ import { Actions, FlattenedGeoJSONLine, FlattenedGeoJSONPoint, FlattenedGeoJSONP
 import { createChangeFromNode, createNodeFromPoint } from './node';
 import { createChangeFromWay, createWay } from './way';
 
-interface GetChangeCreate<T1 extends Feature<Geometry, Tags>> {
+export { FlattenedGeoJSONPoint, FlattenedGeoJSONLine, FlattenedGeoJSONPolygon, Tags, Actions };
+
+export interface GetChangeCreate<T1 extends Feature<Geometry, Tags>> {
   action: Actions.CREATE;
   feature: T1;
   generatorValue?: string;
 }
 
-interface GetChangeModify<T1 extends Feature<Geometry, Tags>, T2 extends BaseElement> {
+export interface GetChangeModify<T1 extends Feature<Geometry, Tags>, T2 extends BaseElement> {
   action: Actions.MODIFY;
   feature: T1;
   oldElement: T2;
   generatorValue?: string;
 }
 
-interface GetChangeDelete<T2 extends BaseElement> {
+export interface GetChangeDelete<T2 extends BaseElement> {
   action: Actions.DELETE;
   oldElement: T2;
   generatorValue?: string;
 }
 
-type GetChangeArgs<T1 extends Feature<Geometry, Tags>, T2 extends BaseElement> = GetChangeCreate<T1> | GetChangeModify<T1, T2> | GetChangeDelete<T2>;
+export type GetChangeArgs<T1 extends Feature<Geometry, Tags>, T2 extends BaseElement> =
+  | GetChangeCreate<T1>
+  | GetChangeModify<T1, T2>
+  | GetChangeDelete<T2>;
 
 export const getChangeFromLine = (args: GetChangeArgs<FlattenedGeoJSONLine, OsmWay>): OsmChange => {
   let change: OsmChange;
