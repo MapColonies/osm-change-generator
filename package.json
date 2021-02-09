@@ -1,12 +1,12 @@
 {
   "name": "@map-colonies/osm-change-generator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A library for creating osm changes based on varied input",
   "main": "./dist/index.js",
   "scripts": {
-    "prettier": "prettier --check .",
-    "prettier:fix": "prettier --write .",
-    "prelint:fix": "npm run prettier:fix",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "prelint:fix": "npm run format:fix",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "release": "standard-version",
@@ -14,7 +14,8 @@
     "prebuild": "npm run clean",
     "build": "tsc --project tsconfig.build.json",
     "start": "npm run build && cd dist && node ./index.js",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "prepublish": "npm run test && npm run build"
   },
   "repository": {
     "type": "git",
