@@ -44,7 +44,7 @@ describe('index', function () {
 
       expect(change).toHaveChangeActionLengths(0, 0, 1);
       const deletedNode = (change.delete as BaseElement[])[0];
-      expect(deletedNode.type).toEqual('node');
+      expect(deletedNode.type).toBe('node');
       expect(deletedNode).toMatchObject(node);
     });
   });
@@ -119,7 +119,7 @@ describe('index', function () {
         return false;
       }).length;
 
-      expect(firstPointCount).toEqual(1);
+      expect(firstPointCount).toBe(1);
 
       line.geometry.coordinates.forEach(([lon, lat], index) => {
         const nodeInWay = way.nodes[index];
