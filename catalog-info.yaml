@@ -4,7 +4,7 @@ metadata:
   name: osm-change-generator
   description: Creates OSM changes from GeoJSON
   tags: 
-  - TypeScript
+  - typescript
   links:
   - url: https://www.npmjs.com/package/@map-colonies/osm-change-generator
     title: NPM
