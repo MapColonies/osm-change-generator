@@ -3,10 +3,11 @@ kind: Component
 metadata:
   name: osm-change-generator
   description: Creates OSM changes from GeoJSON
+  tags: 
+  - TypeScript
   links:
-  - url: https://mapcolonies.atlassian.net/wiki/spaces/MAPConflicResolution/pages/1353613504/Ingestion#Details-about-our-services
-    title: Confluence 
-    icon: Article
+  - url: https://www.npmjs.com/package/@map-colonies/osm-change-generator
+    title: NPM
   annotations:
     github.com/project-slug: MapColonies/osm-change-generator
 spec:
@@ -14,3 +15,5 @@ spec:
   lifecycle: production
   owner: vector-team
   system: vector-ingestion
+  dependsOn:
+  - component:default/node-osm-elements
