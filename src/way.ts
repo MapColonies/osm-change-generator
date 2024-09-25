@@ -1,9 +1,10 @@
 import { OsmWay, OsmNode, OsmChange } from '@map-colonies/node-osm-elements';
 import { Feature, Polygon, LineString, Position } from 'geojson';
-import { isFeatureCoordinatesClosed, createEmptyChange, extractCoordinates } from './helpers';
+import { isFeatureCoordinatesClosed, createEmptyChange, extractCoordinates, extractCoordinateValues } from './helpers';
 import { IdGenerator } from './idGenerator';
 import { Tags, Actions } from './models';
 import { createNode } from './node';
+import { ALTITUDE_TAG } from './constants';
 
 const createWayNodes = (coordinates: Position[], idGenerator: IdGenerator, oldWay?: OsmWay): [OsmNode[], Set<number>] => {
   const nodes: OsmNode[] = [];
@@ -14,16 +15,20 @@ const createWayNodes = (coordinates: Position[], idGenerator: IdGenerator, oldWa
   const coordinatesToAdd = isWayClosed ? coordinates.length - 1 : coordinates.length;
 
   for (let i = 0; i < coordinatesToAdd; i++) {
-    const [lon, lat] = coordinates[i];
+    const [lon, lat, alt] = extractCoordinateValues(coordinates[i]);
 
     const existingNode = oldWay ? doesNodeExistsInWay(coordinates[i], oldWay) : undefined;
+
+    if (existingNode?.tags !== undefined) {
+      delete existingNode.tags[ALTITUDE_TAG];
+    }
 
     const node = createNode({
       lon,
       lat,
       version: existingNode?.version ?? 0,
       id: existingNode?.id ?? idGenerator.getId(),
-      tags: existingNode?.tags ?? {},
+      tags: alt !== undefined ? { ...existingNode?.tags, altitude: alt.toString() } : existingNode?.tags,
     });
 
     nodes.push(node);

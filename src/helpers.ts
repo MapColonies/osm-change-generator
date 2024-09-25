@@ -1,7 +1,10 @@
 import { OsmChange } from '@map-colonies/node-osm-elements';
 import { Feature, LineString, Polygon, Position } from 'geojson';
-import { generatorName } from './constants';
+import { ALTITUDE_COORDINATE_INDEX, generatorName } from './constants';
 import { Tags } from './models';
+
+const extractAltitude = (coordinates: Position): number | undefined =>
+  coordinates.length === ALTITUDE_COORDINATE_INDEX + 1 ? coordinates[ALTITUDE_COORDINATE_INDEX] : undefined;
 
 export const createEmptyChange = (): OsmChange => ({
   type: 'osmchange',
@@ -25,3 +28,9 @@ export const replaceChangeGenerator = (change: OsmChange, generatorValue: string
   change.generator = generatorValue;
   return change;
 };
+
+export const extractCoordinateValues = (coordinates: Position): [number, number, number | undefined] => [
+  coordinates[0],
+  coordinates[1],
+  extractAltitude(coordinates),
+];
