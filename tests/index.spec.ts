@@ -5,6 +5,19 @@ import { ALTITUDE_TAG } from '../src/constants';
 
 describe('index', function () {
   describe('#getChangeFromPoint', function () {
+    it('should add a node with no tags to the create part of the change', function () {
+      const point: FlattenedGeoJSONPoint = { geometry: { type: 'Point', coordinates: [18, 17] }, type: 'Feature', properties: undefined };
+      const expectedNode = { type: 'node', lon: point.geometry.coordinates[0], lat: point.geometry.coordinates[1], tags: {} };
+
+      const change = getChangeFromPoint({ action: Actions.CREATE, feature: point, generatorValue: 'test' });
+
+      expect(change).toHaveChangeActionLengths(1, 0, 0);
+      expect(change).toHaveProperty('generator', 'test');
+      const node = (change.create as BaseElement[])[0];
+      expect(node.id).toBeLessThan(0);
+      expect(node).toMatchObject(expectedNode);
+    });
+
     it('should add a node to the create part of the change', function () {
       const point: FlattenedGeoJSONPoint = { geometry: { type: 'Point', coordinates: [18, 17] }, type: 'Feature', properties: { dog: 'meow' } };
       const expectedNode = { type: 'node', lon: point.geometry.coordinates[0], lat: point.geometry.coordinates[1], tags: { dog: 'meow' } };
@@ -119,6 +132,46 @@ describe('index', function () {
   });
 
   describe('#getChangeFromLine', function () {
+    it('should create a way with all its points and no tags', function () {
+      const line: FlattenedGeoJSONLine = {
+        type: 'Feature',
+        properties: undefined,
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [35.200434, 31.7697903],
+            [35.3002677, 31.7696671],
+            [35.200611, 31.7694414],
+          ],
+        },
+      };
+
+      const change = getChangeFromLine({ action: Actions.CREATE, feature: line, generatorValue: 'test' });
+
+      expect(change).toHaveChangeActionLengths(line.geometry.coordinates.length + 1, 0, 0);
+      expect(change).toHaveProperty('generator', 'test');
+
+      const way = change.create?.find((elm) => elm.type === 'way') as OsmWay;
+      expect(way).toBeDefined();
+      expect(way).toHaveProperty('version', 0);
+      expect(way.tags).toBeUndefined();
+
+      const idSet = new Set<number>([way.id]);
+      expect(way.nodes).toMatchPositionOrder(line.geometry.coordinates);
+
+      // checks that each id is unique, and a matching node is created for it.
+      line.geometry.coordinates.forEach(([lon, lat], index) => {
+        const nodeInWay = way.nodes[index];
+        expect(idSet).not.toContain(nodeInWay.id);
+        idSet.add(nodeInWay.id);
+
+        const createdNode = change.create?.find((elm) => elm.id === nodeInWay.id);
+        expect(createdNode).toBeDefined();
+        expect(createdNode).toMatchObject({ lon, lat, id: nodeInWay.id, tags: {} });
+        expect(createdNode).toHaveProperty('version', 0);
+      });
+    });
+
     it('should create a way with all its points', function () {
       const line: FlattenedGeoJSONLine = {
         type: 'Feature',
@@ -779,6 +832,53 @@ describe('index', function () {
   });
 
   describe('#getChangeFromPolygon', function () {
+    it('should create a way with all its points and no tags', function () {
+      const polygon: FlattenedGeoJSONPolygon = {
+        type: 'Feature',
+        properties: undefined,
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [35.200434, 31.7697903],
+              [35.3002677, 31.7696671],
+              [35.200611, 31.7694414],
+              [35.200434, 31.7697903],
+            ],
+          ],
+        },
+      };
+
+      const change = getChangeFromPolygon({ action: Actions.CREATE, feature: polygon, generatorValue: 'test' });
+
+      expect(change).toHaveChangeActionLengths(polygon.geometry.coordinates[0].length, 0, 0);
+      expect(change).toHaveProperty('generator', 'test');
+
+      const way = change.create?.find((elm) => elm.type === 'way') as OsmWay;
+      expect(way).toBeDefined();
+      expect(way).toHaveProperty('version', 0);
+      expect(way.tags).toBeUndefined();
+
+      const idSet = new Set<number>([way.id]);
+      expect(way.nodes).toMatchPositionOrder(polygon.geometry.coordinates[0]);
+
+      const length = polygon.geometry.coordinates[0].length - 1;
+      expect(way.nodes[0].id).toEqual(way.nodes[length].id);
+      // checks that each id is unique, and a matching node is created for it.
+      for (let i = 0; i < length; i++) {
+        const [lon, lat] = polygon.geometry.coordinates[0][i];
+
+        const nodeInWay = way.nodes[i];
+        expect(idSet).not.toContain(nodeInWay.id);
+        idSet.add(nodeInWay.id);
+
+        const createdNode = change.create?.find((elm) => elm.id === nodeInWay.id);
+        expect(createdNode).toBeDefined();
+        expect(createdNode).toMatchObject({ lon, lat, id: nodeInWay.id, tags: {} });
+        expect(createdNode).toHaveProperty('version', 0);
+      }
+    });
+
     it('should create a way with all its points', function () {
       const polygon: FlattenedGeoJSONPolygon = {
         type: 'Feature',

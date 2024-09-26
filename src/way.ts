@@ -23,12 +23,14 @@ const createWayNodes = (coordinates: Position[], idGenerator: IdGenerator, oldWa
       delete existingNode.tags[ALTITUDE_TAG];
     }
 
+    const existingTags = existingNode?.tags !== undefined ? existingNode.tags : {};
+
     const node = createNode({
       lon,
       lat,
       version: existingNode?.version ?? 0,
       id: existingNode?.id ?? idGenerator.getId(),
-      tags: alt !== undefined ? { ...existingNode?.tags, altitude: alt.toString() } : existingNode?.tags,
+      tags: alt !== undefined ? { ...existingTags, altitude: alt.toString() } : { ...existingTags },
     });
 
     nodes.push(node);
