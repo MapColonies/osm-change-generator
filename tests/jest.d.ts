@@ -1,6 +1,5 @@
 import { Position } from 'geojson';
 
-export {};
 declare global {
   namespace jest {
     interface Matchers<R> {
