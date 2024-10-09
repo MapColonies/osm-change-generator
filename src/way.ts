@@ -6,7 +6,7 @@ import { Tags, Actions } from './models';
 import { createNode } from './node';
 import { ALTITUDE_TAG } from './constants';
 
-const createWayNodes = (coordinates: Position[], idGenerator: IdGenerator, oldWay?: OsmWay): [OsmNode[], Set<number>] => {
+const createWayNodes = (coordinates: Position[], idGenerator: IdGenerator, oldWay?: OsmWay, shouldHandle3D?: boolean): [OsmNode[], Set<number>] => {
   const nodes: OsmNode[] = [];
   const usedNodeIds = new Set<number>();
   const isWayClosed = isFeatureCoordinatesClosed(coordinates);
@@ -19,7 +19,8 @@ const createWayNodes = (coordinates: Position[], idGenerator: IdGenerator, oldWa
 
     const existingNode = oldWay ? doesNodeExistsInWay(coordinates[i], oldWay) : undefined;
 
-    if (existingNode?.tags !== undefined) {
+    // remove pre change altitude tag
+    if (shouldHandle3D === true && existingNode?.tags !== undefined) {
       delete existingNode.tags[ALTITUDE_TAG];
     }
 
@@ -30,7 +31,7 @@ const createWayNodes = (coordinates: Position[], idGenerator: IdGenerator, oldWa
       lat,
       version: existingNode?.version ?? 0,
       id: existingNode?.id ?? idGenerator.getId(),
-      tags: alt !== undefined ? { ...existingTags, altitude: alt.toString() } : { ...existingTags },
+      tags: shouldHandle3D === true && alt !== undefined ? { ...existingTags, altitude: alt.toString() } : { ...existingTags },
     });
 
     nodes.push(node);
@@ -95,7 +96,11 @@ export const createChangeFromWay = (action: Actions, way: OsmWay, orphanNodes: O
   return change;
 };
 
-export const createWay = <T extends Feature<Polygon | LineString, Tags>>(feature: T, oldWay?: OsmWay): [OsmWay, OsmNode[]] => {
+export const createWay = <T extends Feature<Polygon | LineString, Tags>>(
+  feature: T,
+  oldWay?: OsmWay,
+  shouldHandle3D?: boolean
+): [OsmWay, OsmNode[]] => {
   const idGenerator = new IdGenerator();
 
   // get the feature coordinates
@@ -109,7 +114,7 @@ export const createWay = <T extends Feature<Polygon | LineString, Tags>>(feature
     tags: feature.properties,
   };
 
-  const [nodes, usedNodeIds] = createWayNodes(coordinates, idGenerator, oldWay);
+  const [nodes, usedNodeIds] = createWayNodes(coordinates, idGenerator, oldWay, shouldHandle3D);
 
   way.nodes = nodes;
 

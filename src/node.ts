@@ -8,10 +8,14 @@ export const createNode = (args: CreateNodeArgs): OsmNode => {
   return { id: id ?? DEFAULT_ID, lon, lat, version: version ?? 0, type: 'node', tags };
 };
 
-export const createNodeFromPoint = (point: FlattenedGeoJSONPoint, oldNode?: OsmNode): OsmNode => {
+export const createNodeFromPoint = (point: FlattenedGeoJSONPoint, oldNode?: OsmNode, shouldHandle3D?: boolean): OsmNode => {
   const [lon, lat, alt] = extractCoordinateValues(point.geometry.coordinates);
 
-  const node = createNode({ lon, lat, tags: alt !== undefined ? { ...point.properties, [ALTITUDE_TAG]: alt.toString() } : point.properties });
+  const node = createNode({
+    lon,
+    lat,
+    tags: shouldHandle3D === true && alt !== undefined ? { ...point.properties, [ALTITUDE_TAG]: alt.toString() } : point.properties,
+  });
 
   if (oldNode) {
     node.id = oldNode.id;

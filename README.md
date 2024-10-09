@@ -43,7 +43,7 @@ result:
 ```typescript
 const 3dPoint = { geometry: { type: 'Point', coordinates: [18, 17, 6.66] }, type: 'Feature', properties: { dog: 'meow' } };
 
-const change = getChangeFromPoint({ action: Actions.CREATE, feature: point });
+const change = getChangeFromPoint({ action: Actions.CREATE, feature: point, shouldHandle3D: true });
 
 console.log(change)
 ```
@@ -184,7 +184,7 @@ const oldWay: OsmWay = {
   version: 3,
 };
 
-const change = getChangeFromLine({ action: Actions.MODIFY, feature: line, oldElement: oldWay });
+const change = getChangeFromLine({ action: Actions.MODIFY, feature: line, oldElement: oldWay, shouldHandle3D: true });
 
 console.log(change);
 ```

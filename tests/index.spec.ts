@@ -9,7 +9,7 @@ describe('index', function () {
       const point: FlattenedGeoJSONPoint = { geometry: { type: 'Point', coordinates: [18, 17] }, type: 'Feature', properties: undefined };
       const expectedNode = { type: 'node', lon: point.geometry.coordinates[0], lat: point.geometry.coordinates[1], tags: {} };
 
-      const change = getChangeFromPoint({ action: Actions.CREATE, feature: point, generatorValue: 'test' });
+      const change = getChangeFromPoint({ action: Actions.CREATE, feature: point, generatorValue: 'test', shouldHandle3D: false });
 
       expect(change).toHaveChangeActionLengths(1, 0, 0);
       expect(change).toHaveProperty('generator', 'test');
@@ -40,7 +40,7 @@ describe('index', function () {
         tags: { dog: 'meow', [ALTITUDE_TAG]: '6.66' },
       };
 
-      const change = getChangeFromPoint({ action: Actions.CREATE, feature: point, generatorValue: 'test' });
+      const change = getChangeFromPoint({ action: Actions.CREATE, feature: point, generatorValue: 'test', shouldHandle3D: true });
 
       expect(change).toHaveChangeActionLengths(1, 0, 0);
       expect(change).toHaveProperty('generator', 'test');
@@ -81,7 +81,7 @@ describe('index', function () {
         tags: { dog: 'meow', [ALTITUDE_TAG]: '6.66' },
       };
 
-      const change = getChangeFromPoint({ action: Actions.MODIFY, feature: point, oldElement: oldNode });
+      const change = getChangeFromPoint({ action: Actions.MODIFY, feature: point, oldElement: oldNode, shouldHandle3D: true });
 
       expect(change).toHaveChangeActionLengths(0, 1, 0);
       const node = (change.modify as BaseElement[])[0];
@@ -101,7 +101,7 @@ describe('index', function () {
         tags: { dog: 'meow', [ALTITUDE_TAG]: '6.66' },
       };
 
-      const change = getChangeFromPoint({ action: Actions.MODIFY, feature: point, oldElement: oldNode });
+      const change = getChangeFromPoint({ action: Actions.MODIFY, feature: point, oldElement: oldNode, shouldHandle3D: true });
 
       expect(change).toHaveChangeActionLengths(0, 1, 0);
       const node = (change.modify as BaseElement[])[0];
@@ -146,7 +146,7 @@ describe('index', function () {
         },
       };
 
-      const change = getChangeFromLine({ action: Actions.CREATE, feature: line, generatorValue: 'test' });
+      const change = getChangeFromLine({ action: Actions.CREATE, feature: line, generatorValue: 'test', shouldHandle3D: false });
 
       expect(change).toHaveChangeActionLengths(line.geometry.coordinates.length + 1, 0, 0);
       expect(change).toHaveProperty('generator', 'test');
@@ -226,7 +226,7 @@ describe('index', function () {
         },
       };
 
-      const change = getChangeFromLine({ action: Actions.CREATE, feature: line, generatorValue: 'test' });
+      const change = getChangeFromLine({ action: Actions.CREATE, feature: line, generatorValue: 'test', shouldHandle3D: true });
 
       expect(change).toHaveChangeActionLengths(line.geometry.coordinates.length + 1, 0, 0);
       expect(change).toHaveProperty('generator', 'test');
@@ -237,7 +237,7 @@ describe('index', function () {
       expect(way).toHaveProperty('tags.dog', 'meow');
 
       const idSet = new Set<number>([way.id]);
-      expect(way.nodes).toMatchPositionOrder(line.geometry.coordinates);
+      expect(way.nodes).toMatchPositionOrder3D(line.geometry.coordinates);
 
       // checks that each id is unique, and a matching node is created for it.
       line.geometry.coordinates.forEach(([lon, lat, alt], index) => {
@@ -304,7 +304,7 @@ describe('index', function () {
           ],
         },
       };
-      const change = getChangeFromLine({ action: Actions.CREATE, feature: line });
+      const change = getChangeFromLine({ action: Actions.CREATE, feature: line, shouldHandle3D: true });
 
       expect(change.create).toHaveLength(line.geometry.coordinates.length);
 
@@ -470,7 +470,7 @@ describe('index', function () {
         ],
       };
 
-      const change = getChangeFromLine({ action: Actions.MODIFY, oldElement: oldWay, feature: line });
+      const change = getChangeFromLine({ action: Actions.MODIFY, oldElement: oldWay, feature: line, shouldHandle3D: true });
 
       expect(change).toHaveChangeActionLengths(0, 1, 0);
       const way = (change.modify as OsmWay[])[0];
@@ -538,12 +538,12 @@ describe('index', function () {
         ],
       };
 
-      const change = getChangeFromLine({ action: Actions.MODIFY, oldElement: oldWay, feature: line });
+      const change = getChangeFromLine({ action: Actions.MODIFY, oldElement: oldWay, feature: line, shouldHandle3D: true });
 
       expect(change).toHaveChangeActionLengths(0, 1, 0);
       const way = (change.modify as OsmWay[])[0];
 
-      expect(way.nodes).toMatchPositionOrder(line.geometry.coordinates);
+      expect(way.nodes).toMatchPositionOrder3D(line.geometry.coordinates);
     });
 
     it('should add a new node and modify the way', function () {
@@ -605,13 +605,13 @@ describe('index', function () {
         ],
       };
 
-      const change = getChangeFromLine({ action: Actions.MODIFY, oldElement: oldWay, feature: line });
+      const change = getChangeFromLine({ action: Actions.MODIFY, oldElement: oldWay, feature: line, shouldHandle3D: true });
 
       expect(change).toHaveChangeActionLengths(1, 1, 0);
       const way = (change.modify as OsmWay[])[0];
       const node = (change.create as OsmNode[])[0];
 
-      expect(way.nodes).toMatchPositionOrder(line.geometry.coordinates);
+      expect(way.nodes).toMatchPositionOrder3D(line.geometry.coordinates);
       expect(node).toMatchObject({ lon: 37, lat: 36, id: way.nodes[0].id, version: 0, tags: { [ALTITUDE_TAG]: '10' } });
       expect(node.id).toBeLessThanOrEqual(0);
 
@@ -684,13 +684,13 @@ describe('index', function () {
         ],
       };
 
-      const change = getChangeFromLine({ action: Actions.MODIFY, oldElement: oldWay, feature: line });
+      const change = getChangeFromLine({ action: Actions.MODIFY, oldElement: oldWay, feature: line, shouldHandle3D: true });
 
       expect(change).toHaveChangeActionLengths(0, 2, 0);
       const way = change.modify?.find((elm) => elm.type === 'way') as OsmWay;
       const node = change.modify?.find((elm) => elm.type === 'node') as OsmNode;
 
-      expect(way.nodes).toMatchPositionOrder(line.geometry.coordinates);
+      expect(way.nodes).toMatchPositionOrder3D(line.geometry.coordinates);
       expect(node).toMatchObject({ lon: 37, lat: 35, id: way.nodes[0].id, version: 2, tags: { altitude: '10' } });
     });
 
@@ -826,7 +826,7 @@ describe('index', function () {
       const way = (change.modify as OsmWay[])[0];
       const node = (change.delete as OsmNode[])[0];
 
-      expect(way.nodes).toMatchPositionOrder(line.geometry.coordinates);
+      expect(way.nodes).toMatchPositionOrder3D(line.geometry.coordinates);
       expect(node).toMatchObject(oldWay.nodes[2]);
     });
   });
@@ -840,16 +840,16 @@ describe('index', function () {
           type: 'Polygon',
           coordinates: [
             [
-              [35.200434, 31.7697903],
-              [35.3002677, 31.7696671],
-              [35.200611, 31.7694414],
-              [35.200434, 31.7697903],
+              [35.200434, 31.7697903, 1],
+              [35.3002677, 31.7696671, 2],
+              [35.200611, 31.7694414, 3],
+              [35.200434, 31.7697903, 1],
             ],
           ],
         },
       };
 
-      const change = getChangeFromPolygon({ action: Actions.CREATE, feature: polygon, generatorValue: 'test' });
+      const change = getChangeFromPolygon({ action: Actions.CREATE, feature: polygon, generatorValue: 'test', shouldHandle3D: false });
 
       expect(change).toHaveChangeActionLengths(polygon.geometry.coordinates[0].length, 0, 0);
       expect(change).toHaveProperty('generator', 'test');
@@ -943,18 +943,19 @@ describe('index', function () {
         },
       };
 
-      const change = getChangeFromPolygon({ action: Actions.CREATE, feature: polygon, generatorValue: 'test' });
+      const change = getChangeFromPolygon({ action: Actions.CREATE, feature: polygon, generatorValue: 'test', shouldHandle3D: true });
 
       expect(change).toHaveChangeActionLengths(polygon.geometry.coordinates[0].length, 0, 0);
       expect(change).toHaveProperty('generator', 'test');
 
       const way = change.create?.find((elm) => elm.type === 'way') as OsmWay;
+      console.log(way);
       expect(way).toBeDefined();
       expect(way).toHaveProperty('version', 0);
       expect(way).toHaveProperty('tags.dog', 'meow');
 
       const idSet = new Set<number>([way.id]);
-      expect(way.nodes).toMatchPositionOrder(polygon.geometry.coordinates[0]);
+      expect(way.nodes).toMatchPositionOrder3D(polygon.geometry.coordinates[0]);
 
       const length = polygon.geometry.coordinates[0].length - 1;
       expect(way.nodes[0].id).toEqual(way.nodes[length].id);
@@ -1138,7 +1139,7 @@ describe('index', function () {
         ],
       };
 
-      const change = getChangeFromPolygon({ action: Actions.MODIFY, oldElement: oldWay, feature: polygon });
+      const change = getChangeFromPolygon({ action: Actions.MODIFY, oldElement: oldWay, feature: polygon, shouldHandle3D: true });
 
       expect(change).toHaveChangeActionLengths(0, 1, 0);
       const way = (change.modify as OsmWay[])[0];
@@ -1229,12 +1230,12 @@ describe('index', function () {
         ],
       };
 
-      const change = getChangeFromPolygon({ action: Actions.MODIFY, oldElement: oldWay, feature: line });
+      const change = getChangeFromPolygon({ action: Actions.MODIFY, oldElement: oldWay, feature: line, shouldHandle3D: true });
 
       expect(change).toHaveChangeActionLengths(0, 1, 0);
       const way = (change.modify as OsmWay[])[0];
 
-      expect(way.nodes).toMatchPositionOrder(line.geometry.coordinates[0]);
+      expect(way.nodes).toMatchPositionOrder3D(line.geometry.coordinates[0]);
     });
 
     it('should add a new node and modify the way', function () {
@@ -1314,7 +1315,7 @@ describe('index', function () {
       const way = (change.modify as OsmWay[])[0];
       const node = (change.create as OsmNode[])[0];
 
-      expect(way.nodes).toMatchPositionOrder(line.geometry.coordinates[0]);
+      expect(way.nodes).toMatchPositionOrder3D(line.geometry.coordinates[0]);
       expect(node).toMatchObject({ lon: 32, lat: 33, id: way.nodes[3].id, version: 0 });
       expect(node.id).toBeLessThanOrEqual(0);
     });
@@ -1395,7 +1396,7 @@ describe('index', function () {
       const way = change.modify?.find((elm) => elm.type === 'way') as OsmWay;
       const node = change.modify?.find((elm) => elm.type === 'node') as OsmNode;
 
-      expect(way.nodes).toMatchPositionOrder(line.geometry.coordinates[0]);
+      expect(way.nodes).toMatchPositionOrder3D(line.geometry.coordinates[0]);
       expect(node).toMatchObject({ lon: 37, lat: 35, id: way.nodes[2].id, version: 1 });
     });
 
@@ -1474,7 +1475,7 @@ describe('index', function () {
 
       const way = (change.modify as OsmWay[])[0];
 
-      expect(way.nodes).toMatchPositionOrder(line.geometry.coordinates[0]);
+      expect(way.nodes).toMatchPositionOrder3D(line.geometry.coordinates[0]);
       expect(way.nodes[1].id).toEqual(oldWay.nodes[2].id);
       expect(way.nodes[2].id).toEqual(oldWay.nodes[1].id);
     });
@@ -1557,7 +1558,7 @@ describe('index', function () {
       const way = (change.modify as OsmWay[])[0];
       const node = (change.delete as OsmNode[])[0];
 
-      expect(way.nodes).toMatchPositionOrder(line.geometry.coordinates[0]);
+      expect(way.nodes).toMatchPositionOrder3D(line.geometry.coordinates[0]);
       expect(node).toMatchObject(oldWay.nodes[3]);
     });
   });
