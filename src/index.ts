@@ -11,6 +11,7 @@ export interface GetChangeCreate<T1 extends Feature<Geometry, Tags>> {
   action: Actions.CREATE;
   feature: T1;
   generatorValue?: string;
+  shouldHandle3D?: boolean;
 }
 
 export interface GetChangeModify<T1 extends Feature<Geometry, Tags>, T2 extends BaseElement> {
@@ -18,6 +19,7 @@ export interface GetChangeModify<T1 extends Feature<Geometry, Tags>, T2 extends 
   feature: T1;
   oldElement: T2;
   generatorValue?: string;
+  shouldHandle3D?: boolean;
 }
 
 export interface GetChangeDelete<T2 extends BaseElement> {
@@ -38,7 +40,7 @@ export const getChangeFromLine = (args: GetChangeArgs<FlattenedGeoJSONLine, OsmW
     change = createChangeFromWay(Actions.DELETE, args.oldElement, []);
   } else {
     const element = args.action !== Actions.CREATE ? args.oldElement : undefined;
-    const [way, orphanNodes] = createWay(args.feature, element);
+    const [way, orphanNodes] = createWay(args.feature, element, args.shouldHandle3D);
     change = createChangeFromWay(args.action, way, orphanNodes);
   }
 
@@ -52,7 +54,7 @@ export const getChangeFromPolygon = (args: GetChangeArgs<FlattenedGeoJSONPolygon
     change = createChangeFromWay(Actions.DELETE, args.oldElement, []);
   } else {
     const element = args.action !== Actions.CREATE ? args.oldElement : undefined;
-    const [way, orphanNodes] = createWay(args.feature, element);
+    const [way, orphanNodes] = createWay(args.feature, element, args.shouldHandle3D);
     change = createChangeFromWay(args.action, way, orphanNodes);
   }
 
@@ -66,7 +68,7 @@ export const getChangeFromPoint = (args: GetChangeArgs<FlattenedGeoJSONPoint, Os
     change = createChangeFromNode(Actions.DELETE, args.oldElement);
   } else {
     const element = args.action !== Actions.CREATE ? args.oldElement : undefined;
-    const node = createNodeFromPoint(args.feature, element);
+    const node = createNodeFromPoint(args.feature, element, args.shouldHandle3D);
     change = createChangeFromNode(args.action, node);
   }
 

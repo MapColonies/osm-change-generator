@@ -1,7 +1,22 @@
 expect.extend({
   toMatchPositionOrder: (nodes, positions) => {
     for (let i = 0; i < nodes.length; i++) {
-      if (nodes[i].lon !== positions[i][0] || nodes[i].lat !== positions[i][1]) {
+      if (nodes[i].lon !== positions[i][0] || nodes[i].lat !== positions[i][1] || nodes[i].tags?.altitude !== undefined) {
+        return {
+          message: () => `expected node at index ${i} to match`,
+          pass: false,
+        };
+      }
+      return { pass: true, message: () => `expected nodes to not match positions` };
+    }
+  },
+  toMatchPositionOrder3D: (nodes, positions) => {
+    for (let i = 0; i < nodes.length; i++) {
+      if (
+        nodes[i].lon !== positions[i][0] ||
+        nodes[i].lat !== positions[i][1] ||
+        (positions[i].length !== 3 && nodes[i].tags?.altitude !== positions[i][2].toString())
+      ) {
         return {
           message: () => `expected node at index ${i} to match`,
           pass: false,

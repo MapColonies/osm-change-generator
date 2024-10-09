@@ -1,11 +1,12 @@
 import { OsmWay, OsmNode, OsmChange } from '@map-colonies/node-osm-elements';
 import { Feature, Polygon, LineString, Position } from 'geojson';
-import { isFeatureCoordinatesClosed, createEmptyChange, extractCoordinates } from './helpers';
+import { isFeatureCoordinatesClosed, createEmptyChange, extractCoordinates, extractCoordinateValues } from './helpers';
 import { IdGenerator } from './idGenerator';
 import { Tags, Actions } from './models';
 import { createNode } from './node';
+import { ALTITUDE_TAG } from './constants';
 
-const createWayNodes = (coordinates: Position[], idGenerator: IdGenerator, oldWay?: OsmWay): [OsmNode[], Set<number>] => {
+const createWayNodes = (coordinates: Position[], idGenerator: IdGenerator, oldWay?: OsmWay, shouldHandle3D?: boolean): [OsmNode[], Set<number>] => {
   const nodes: OsmNode[] = [];
   const usedNodeIds = new Set<number>();
   const isWayClosed = isFeatureCoordinatesClosed(coordinates);
@@ -14,16 +15,23 @@ const createWayNodes = (coordinates: Position[], idGenerator: IdGenerator, oldWa
   const coordinatesToAdd = isWayClosed ? coordinates.length - 1 : coordinates.length;
 
   for (let i = 0; i < coordinatesToAdd; i++) {
-    const [lon, lat] = coordinates[i];
+    const [lon, lat, alt] = extractCoordinateValues(coordinates[i]);
 
     const existingNode = oldWay ? doesNodeExistsInWay(coordinates[i], oldWay) : undefined;
+
+    // remove pre change altitude tag
+    if (shouldHandle3D === true && existingNode?.tags !== undefined) {
+      delete existingNode.tags[ALTITUDE_TAG];
+    }
+
+    const existingTags = existingNode?.tags !== undefined ? existingNode.tags : {};
 
     const node = createNode({
       lon,
       lat,
       version: existingNode?.version ?? 0,
       id: existingNode?.id ?? idGenerator.getId(),
-      tags: existingNode?.tags ?? {},
+      tags: shouldHandle3D === true && alt !== undefined ? { ...existingTags, altitude: alt.toString() } : { ...existingTags },
     });
 
     nodes.push(node);
@@ -88,7 +96,11 @@ export const createChangeFromWay = (action: Actions, way: OsmWay, orphanNodes: O
   return change;
 };
 
-export const createWay = <T extends Feature<Polygon | LineString, Tags>>(feature: T, oldWay?: OsmWay): [OsmWay, OsmNode[]] => {
+export const createWay = <T extends Feature<Polygon | LineString, Tags>>(
+  feature: T,
+  oldWay?: OsmWay,
+  shouldHandle3D?: boolean
+): [OsmWay, OsmNode[]] => {
   const idGenerator = new IdGenerator();
 
   // get the feature coordinates
@@ -102,7 +114,7 @@ export const createWay = <T extends Feature<Polygon | LineString, Tags>>(feature
     tags: feature.properties,
   };
 
-  const [nodes, usedNodeIds] = createWayNodes(coordinates, idGenerator, oldWay);
+  const [nodes, usedNodeIds] = createWayNodes(coordinates, idGenerator, oldWay, shouldHandle3D);
 
   way.nodes = nodes;
 

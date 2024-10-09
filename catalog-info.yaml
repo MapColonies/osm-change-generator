@@ -3,11 +3,11 @@ kind: Component
 metadata:
   name: osm-change-generator
   description: Creates OSM changes from GeoJSON
-  tags: 
-  - typescript
+  tags:
+    - typescript
   links:
-  - url: https://www.npmjs.com/package/@map-colonies/osm-change-generator
-    title: NPM
+    - url: https://www.npmjs.com/package/@map-colonies/osm-change-generator
+      title: NPM
   annotations:
     github.com/project-slug: MapColonies/osm-change-generator
 spec:
@@ -16,4 +16,4 @@ spec:
   owner: vector-team
   system: vector-ingestion
   dependsOn:
-  - component:default/node-osm-elements
+    - component:default/node-osm-elements
