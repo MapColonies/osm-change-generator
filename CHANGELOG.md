@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/MapColonies/osm-change-generator/compare/v1.0.1...v1.1.0) (2024-10-09)
+
+
+### Features
+
+* added possible altitude handling ([#13](https://github.com/MapColonies/osm-change-generator/issues/13)) ([016cae2](https://github.com/MapColonies/osm-change-generator/commit/016cae293446d8f81e387efabe01cf9107f5a04e))
+
 ### [1.0.1](https://github.com/MapColonies/osm-change-generator/compare/v1.0.0...v1.0.1) (2021-02-09)
 
 
