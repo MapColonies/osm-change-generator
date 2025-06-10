@@ -7,11 +7,16 @@ import { createChangeFromWay, createWay } from './way';
 
 export { FlattenedGeoJSONPoint, FlattenedGeoJSONLine, FlattenedGeoJSONPolygon, Tags, Actions };
 
+export interface GetChangeOptions {
+  shouldHandleLOD2?: boolean;
+  shouldHandlePrecision?: boolean;
+}
+
 export interface GetChangeCreate<T1 extends Feature<Geometry, Tags>> {
   action: Actions.CREATE;
   feature: T1;
   generatorValue?: string;
-  shouldHandle3D?: boolean;
+  options?: GetChangeOptions;
 }
 
 export interface GetChangeModify<T1 extends Feature<Geometry, Tags>, T2 extends BaseElement> {
@@ -19,7 +24,7 @@ export interface GetChangeModify<T1 extends Feature<Geometry, Tags>, T2 extends 
   feature: T1;
   oldElement: T2;
   generatorValue?: string;
-  shouldHandle3D?: boolean;
+  options?: GetChangeOptions;
 }
 
 export interface GetChangeDelete<T2 extends BaseElement> {
@@ -40,7 +45,7 @@ export const getChangeFromLine = (args: GetChangeArgs<FlattenedGeoJSONLine, OsmW
     change = createChangeFromWay(Actions.DELETE, args.oldElement, []);
   } else {
     const element = args.action !== Actions.CREATE ? args.oldElement : undefined;
-    const [way, orphanNodes] = createWay(args.feature, element, args.shouldHandle3D);
+    const [way, orphanNodes] = createWay(args.feature, element, args.options);
     change = createChangeFromWay(args.action, way, orphanNodes);
   }
 
@@ -54,7 +59,7 @@ export const getChangeFromPolygon = (args: GetChangeArgs<FlattenedGeoJSONPolygon
     change = createChangeFromWay(Actions.DELETE, args.oldElement, []);
   } else {
     const element = args.action !== Actions.CREATE ? args.oldElement : undefined;
-    const [way, orphanNodes] = createWay(args.feature, element, args.shouldHandle3D);
+    const [way, orphanNodes] = createWay(args.feature, element, args.options);
     change = createChangeFromWay(args.action, way, orphanNodes);
   }
 
@@ -68,7 +73,7 @@ export const getChangeFromPoint = (args: GetChangeArgs<FlattenedGeoJSONPoint, Os
     change = createChangeFromNode(Actions.DELETE, args.oldElement);
   } else {
     const element = args.action !== Actions.CREATE ? args.oldElement : undefined;
-    const node = createNodeFromPoint(args.feature, element, args.shouldHandle3D);
+    const node = createNodeFromPoint(args.feature, element, args.options);
     change = createChangeFromNode(args.action, node);
   }
 

@@ -1,37 +1,49 @@
 import { OsmWay, OsmNode, OsmChange } from '@map-colonies/node-osm-elements';
 import { Feature, Polygon, LineString, Position } from 'geojson';
-import { isFeatureCoordinatesClosed, createEmptyChange, extractCoordinates, extractCoordinateValues } from './helpers';
+import {
+  isFeatureCoordinatesClosed,
+  createEmptyChange,
+  extractCoordinates,
+  extractCoordinateValues,
+  addTagsConditionally,
+  removeTags,
+} from './helpers';
 import { IdGenerator } from './idGenerator';
 import { Tags, Actions } from './models';
 import { createNode } from './node';
-import { ALTITUDE_TAG } from './constants';
+import { TAGS, LAST_ELEMENT_INDEX } from './constants';
+import { isPrecisionAffected } from './precision';
+import { GetChangeOptions } from '.';
 
-const createWayNodes = (coordinates: Position[], idGenerator: IdGenerator, oldWay?: OsmWay, shouldHandle3D?: boolean): [OsmNode[], Set<number>] => {
+const createWayNodes = (coordinates: Position[], idGenerator: IdGenerator, oldWay?: OsmWay, options?: GetChangeOptions): [OsmNode[], Set<number>] => {
   const nodes: OsmNode[] = [];
   const usedNodeIds = new Set<number>();
   const isWayClosed = isFeatureCoordinatesClosed(coordinates);
 
   // calculate the number of nodes to loop over
-  const coordinatesToAdd = isWayClosed ? coordinates.length - 1 : coordinates.length;
+  const coordinatesAmount = isWayClosed ? coordinates.length - 1 : coordinates.length;
 
-  for (let i = 0; i < coordinatesToAdd; i++) {
+  for (let i = 0; i < coordinatesAmount; i++) {
     const [lon, lat, alt] = extractCoordinateValues(coordinates[i]);
 
     const existingNode = oldWay ? doesNodeExistsInWay(coordinates[i], oldWay) : undefined;
 
-    // remove pre change altitude tag
-    if (shouldHandle3D === true && existingNode?.tags !== undefined) {
-      delete existingNode.tags[ALTITUDE_TAG];
-    }
-
     const existingTags = existingNode?.tags !== undefined ? existingNode.tags : {};
+
+    // remove oldNode's existing tags attribution
+    removeTags(existingTags, [TAGS.ALTITUDE, TAGS.PRECISED_LON, TAGS.PRECISED_LAT]);
+
+    const tags = addTagsConditionally(existingTags, [
+      { condition: options?.shouldHandleLOD2 === true && alt !== undefined, tags: { [TAGS.ALTITUDE]: alt } },
+      { condition: options?.shouldHandlePrecision === true, tags: { [TAGS.PRECISED_LON]: lon, [TAGS.PRECISED_LAT]: lat } },
+    ]);
 
     const node = createNode({
       lon,
       lat,
       version: existingNode?.version ?? 0,
       id: existingNode?.id ?? idGenerator.getId(),
-      tags: shouldHandle3D === true && alt !== undefined ? { ...existingTags, altitude: alt.toString() } : { ...existingTags },
+      tags,
     });
 
     nodes.push(node);
@@ -99,26 +111,33 @@ export const createChangeFromWay = (action: Actions, way: OsmWay, orphanNodes: O
 export const createWay = <T extends Feature<Polygon | LineString, Tags>>(
   feature: T,
   oldWay?: OsmWay,
-  shouldHandle3D?: boolean
+  options?: GetChangeOptions
 ): [OsmWay, OsmNode[]] => {
   const idGenerator = new IdGenerator();
-
-  // get the feature coordinates
-  const coordinates = extractCoordinates(feature);
 
   const way: OsmWay = {
     id: oldWay?.id ?? idGenerator.getId(),
     nodes: [],
     type: 'way',
     version: oldWay?.version ?? 0,
-    tags: feature.properties,
   };
 
-  const [nodes, usedNodeIds] = createWayNodes(coordinates, idGenerator, oldWay, shouldHandle3D);
+  // get the feature coordinates
+  const coordinates = extractCoordinates(feature);
+
+  // check if geometry precision will be affected once ingested
+  const precisionAffected = options?.shouldHandlePrecision === true ? isPrecisionAffected(coordinates) : false;
+
+  const [nodes, usedNodeIds] = createWayNodes(coordinates, idGenerator, oldWay, { ...options, shouldHandlePrecision: precisionAffected });
 
   way.nodes = nodes;
 
-  const unusedNodes = oldWay?.nodes.filter((node) => !usedNodeIds.has(node.id)) ?? [];
+  const tags = addTagsConditionally(feature.properties, [{ condition: precisionAffected, tags: { [TAGS.GEOMETRY_PRECISION_AFFECTED]: 'true' } }]);
+
+  way.tags = tags;
+
+  const oldNodes = oldWay && isWayClosed(oldWay.nodes) ? oldWay.nodes.slice(0, LAST_ELEMENT_INDEX) : oldWay?.nodes;
+  const unusedNodes = oldNodes?.filter((node) => !usedNodeIds.has(node.id)) ?? [];
 
   return [way, unusedNodes];
 };
