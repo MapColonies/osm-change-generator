@@ -13,12 +13,12 @@ export const createNode = (args: CreateNodeArgs): OsmNode => {
 export const createNodeFromPoint = (point: FlattenedGeoJSONPoint, oldNode?: OsmNode, options?: GetChangeOptions): OsmNode => {
   const [lon, lat, alt] = extractCoordinateValues(point.geometry.coordinates);
 
-  const precionAffected = isPrecisionAffected([point.geometry.coordinates]);
+  const precisionAffected = isPrecisionAffected([point.geometry.coordinates]);
 
   const tags = addTagsConditionally(point.properties, [
     { condition: options?.shouldHandleLOD2 === true && alt !== undefined, tags: { [TAGS.ALTITUDE]: alt } },
     {
-      condition: precionAffected,
+      condition: precisionAffected,
       tags: { [TAGS.GEOMETRY_PRECISION_AFFECTED]: 'true', [TAGS.PRECISED_LON]: lon, [TAGS.PRECISED_LAT]: lat },
     },
   ]);
