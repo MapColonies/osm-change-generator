@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0](https://github.com/MapColonies/osm-change-generator/compare/v1.1.0...v2.0.0) (2025-07-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* **change:** original coordinates precision attribution (#15)
+
+### Features
+
+* **change:** original coordinates precision attribution ([#15](https://github.com/MapColonies/osm-change-generator/issues/15)) ([868965c](https://github.com/MapColonies/osm-change-generator/commit/868965cc588d808d6c316968c59a9dbafab3c74d))
+
 ## [1.1.0](https://github.com/MapColonies/osm-change-generator/compare/v1.0.1...v1.1.0) (2024-10-09)
 
 
