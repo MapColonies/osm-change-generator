@@ -9,6 +9,13 @@ npm install --save @map-colonies/osm-change-generator
 ## usage
 call the request function based on the feature you want to create change from
 
+## options
+the following options are available with every getChange call:
+- shouldHandleLOD2 - boolean flag determening the handling of lod2 tags enrichment
+- shouldHandlePrecision - boolean flag determening the handling of precision tags enrichment
+- maxTagKeyLength - the maximum length of a tag's key. if the key exceeds the maximum value, the tag will be ignored
+- maxTagValueLength - the maximum length of a tag's value. if the value exceeds the maximum value, the tag will be ignored
+
 ### create
 ```typescript
 import { getChangeFromPoint } from '@map-colonies/osm-change-generator';
