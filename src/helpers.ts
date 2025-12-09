@@ -3,10 +3,6 @@ import { Feature, LineString, Polygon, Position } from 'geojson';
 import { ALTITUDE_COORDINATE_INDEX, generatorName } from './constants';
 import { Tags } from './models';
 
-interface ToStringable {
-  toString: () => string;
-}
-
 const extractAltitudeSafely = (coordinates: Position): number | undefined =>
   coordinates.length === ALTITUDE_COORDINATE_INDEX + 1 ? coordinates[ALTITUDE_COORDINATE_INDEX] : undefined;
 
@@ -38,33 +34,3 @@ export const extractCoordinateValues = (coordinates: Position): [number, number,
   coordinates[1],
   extractAltitudeSafely(coordinates),
 ];
-
-export const addTagsConditionally = (current: Tags, pairs: { condition: boolean; tags: Record<string, ToStringable | undefined> }[]): Tags => {
-  const next: Tags = {};
-
-  for (const { condition, tags } of pairs) {
-    if (!condition) {
-      continue;
-    }
-
-    for (const key in tags) {
-      if (Object.prototype.hasOwnProperty.call(tags, key) && tags[key] !== undefined) {
-        next[key] = tags[key].toString();
-      }
-    }
-  }
-
-  const result = { ...current, ...next };
-
-  return Object.keys(result).length !== 0 ? result : undefined;
-};
-
-export const removeTags = (current: Tags, tags: string[]): void => {
-  if (current === undefined) {
-    return;
-  }
-
-  for (const tag of tags) {
-    delete current[tag];
-  }
-};

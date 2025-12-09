@@ -10,6 +10,8 @@ export { FlattenedGeoJSONPoint, FlattenedGeoJSONLine, FlattenedGeoJSONPolygon, T
 export interface GetChangeOptions {
   shouldHandleLOD2?: boolean;
   shouldHandlePrecision?: boolean;
+  maxTagKeyLength?: number;
+  maxTagValueLength?: number;
 }
 
 export interface GetChangeCreate<T1 extends Feature<Geometry, Tags>> {

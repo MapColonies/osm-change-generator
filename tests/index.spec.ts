@@ -19,11 +19,95 @@ describe('index', function () {
       expect(node).toMatchObject(expectedNode);
     });
 
+    it('should add a node with no tags to the create part of the change even if prodived tag key length condition', function () {
+      const point: FlattenedGeoJSONPoint = { geometry: { type: 'Point', coordinates: [18, 17] }, type: 'Feature', properties: undefined };
+      const expectedNode = { type: 'node', lon: point.geometry.coordinates[0], lat: point.geometry.coordinates[1], tags: {} };
+
+      const change = getChangeFromPoint({ action: Actions.CREATE, feature: point, generatorValue: 'test', options: { maxTagKeyLength: 10 } });
+
+      expect(change).toHaveChangeActionLengths(1, 0, 0);
+      expect(change).toHaveProperty('generator', 'test');
+      const node = (change.create as BaseElement[])[0];
+      expect(node.id).toBeLessThan(0);
+      expect(node).toMatchObject(expectedNode);
+    });
+
+    it('should add a node with no tags to the create part of the change even if prodived tag value length condition', function () {
+      const point: FlattenedGeoJSONPoint = { geometry: { type: 'Point', coordinates: [18, 17] }, type: 'Feature', properties: undefined };
+      const expectedNode = { type: 'node', lon: point.geometry.coordinates[0], lat: point.geometry.coordinates[1], tags: {} };
+
+      const change = getChangeFromPoint({ action: Actions.CREATE, feature: point, generatorValue: 'test', options: { maxTagValueLength: 10 } });
+
+      expect(change).toHaveChangeActionLengths(1, 0, 0);
+      expect(change).toHaveProperty('generator', 'test');
+      const node = (change.create as BaseElement[])[0];
+      expect(node.id).toBeLessThan(0);
+      expect(node).toMatchObject(expectedNode);
+    });
+
     it('should add a node to the create part of the change', function () {
       const point: FlattenedGeoJSONPoint = { geometry: { type: 'Point', coordinates: [18, 17] }, type: 'Feature', properties: { dog: 'meow' } };
       const expectedNode = { type: 'node', lon: point.geometry.coordinates[0], lat: point.geometry.coordinates[1], tags: { dog: 'meow' } };
 
       const change = getChangeFromPoint({ action: Actions.CREATE, feature: point, generatorValue: 'test' });
+
+      expect(change).toHaveChangeActionLengths(1, 0, 0);
+      expect(change).toHaveProperty('generator', 'test');
+      const node = (change.create as BaseElement[])[0];
+      expect(node.id).toBeLessThan(0);
+      expect(node).toMatchObject(expectedNode);
+    });
+
+    it('should add a node to the create part of the change even if a tag key is too long', function () {
+      const point: FlattenedGeoJSONPoint = { geometry: { type: 'Point', coordinates: [18, 17] }, type: 'Feature', properties: { dog: 'meow' } };
+      const expectedNode = { type: 'node', lon: point.geometry.coordinates[0], lat: point.geometry.coordinates[1], tags: {} };
+
+      const change = getChangeFromPoint({
+        action: Actions.CREATE,
+        feature: point,
+        generatorValue: 'test',
+        options: { maxTagKeyLength: 2, maxTagValueLength: 10 },
+      });
+
+      expect(change).toHaveChangeActionLengths(1, 0, 0);
+      expect(change).toHaveProperty('generator', 'test');
+      const node = (change.create as BaseElement[])[0];
+      expect(node.id).toBeLessThan(0);
+      expect(node).toMatchObject(expectedNode);
+    });
+
+    it('should add a node to the create part of the change even if a tag value is too long', function () {
+      const point: FlattenedGeoJSONPoint = { geometry: { type: 'Point', coordinates: [18, 17] }, type: 'Feature', properties: { dog: 'meow' } };
+      const expectedNode = { type: 'node', lon: point.geometry.coordinates[0], lat: point.geometry.coordinates[1], tags: {} };
+
+      const change = getChangeFromPoint({
+        action: Actions.CREATE,
+        feature: point,
+        generatorValue: 'test',
+        options: { maxTagKeyLength: 10, maxTagValueLength: 3 },
+      });
+
+      expect(change).toHaveChangeActionLengths(1, 0, 0);
+      expect(change).toHaveProperty('generator', 'test');
+      const node = (change.create as BaseElement[])[0];
+      expect(node.id).toBeLessThan(0);
+      expect(node).toMatchObject(expectedNode);
+    });
+
+    it('should add a node to the create part of the change and filter out some tags accordingly', function () {
+      const point: FlattenedGeoJSONPoint = {
+        geometry: { type: 'Point', coordinates: [18, 17] },
+        type: 'Feature',
+        properties: { key1: 'longValue', longKey: 'value2', key3: 'value3' },
+      };
+      const expectedNode = { type: 'node', lon: point.geometry.coordinates[0], lat: point.geometry.coordinates[1], tags: { key3: 'value3' } };
+
+      const change = getChangeFromPoint({
+        action: Actions.CREATE,
+        feature: point,
+        generatorValue: 'test',
+        options: { maxTagKeyLength: 5, maxTagValueLength: 7 },
+      });
 
       expect(change).toHaveChangeActionLengths(1, 0, 0);
       expect(change).toHaveProperty('generator', 'test');
@@ -356,6 +440,133 @@ describe('index', function () {
       expect(way).toBeDefined();
       expect(way).toHaveProperty('version', 0);
       expect(way).toHaveProperty('tags.dog', 'meow');
+
+      const idSet = new Set<number>([way.id]);
+      expect(way.nodes).toMatchPositionOrder(line.geometry.coordinates);
+
+      // checks that each id is unique, and a matching node is created for it.
+      line.geometry.coordinates.forEach(([lon, lat], index) => {
+        const nodeInWay = way.nodes[index];
+        expect(idSet).not.toContain(nodeInWay.id);
+        idSet.add(nodeInWay.id);
+
+        const createdNode = change.create?.find((elm) => elm.id === nodeInWay.id);
+        expect(createdNode).toBeDefined();
+        expect(createdNode).toMatchObject({ lon, lat, id: nodeInWay.id });
+        expect(createdNode).toHaveProperty('version', 0);
+      });
+    });
+
+    it('should create a way with all its points even if a tag key is too long', function () {
+      const line: FlattenedGeoJSONLine = {
+        type: 'Feature',
+        properties: { dog: 'meow' },
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [35.200434, 31.7697903],
+            [35.3002677, 31.7696671],
+            [35.200611, 31.7694414],
+          ],
+        },
+      };
+
+      const change = getChangeFromLine({ action: Actions.CREATE, feature: line, generatorValue: 'test', options: { maxTagKeyLength: 2 } });
+
+      expect(change).toHaveChangeActionLengths(line.geometry.coordinates.length + 1, 0, 0);
+      expect(change).toHaveProperty('generator', 'test');
+
+      const way = change.create?.find((elm) => elm.type === 'way') as OsmWay;
+      expect(way).toBeDefined();
+      expect(way).toHaveProperty('version', 0);
+      expect(way).not.toHaveProperty('tags.dog');
+
+      const idSet = new Set<number>([way.id]);
+      expect(way.nodes).toMatchPositionOrder(line.geometry.coordinates);
+
+      // checks that each id is unique, and a matching node is created for it.
+      line.geometry.coordinates.forEach(([lon, lat], index) => {
+        const nodeInWay = way.nodes[index];
+        expect(idSet).not.toContain(nodeInWay.id);
+        idSet.add(nodeInWay.id);
+
+        const createdNode = change.create?.find((elm) => elm.id === nodeInWay.id);
+        expect(createdNode).toBeDefined();
+        expect(createdNode).toMatchObject({ lon, lat, id: nodeInWay.id });
+        expect(createdNode).toHaveProperty('version', 0);
+      });
+    });
+
+    it('should create a way with all its points even if a tag value is too long', function () {
+      const line: FlattenedGeoJSONLine = {
+        type: 'Feature',
+        properties: { dog: 'meow' },
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [35.200434, 31.7697903],
+            [35.3002677, 31.7696671],
+            [35.200611, 31.7694414],
+          ],
+        },
+      };
+
+      const change = getChangeFromLine({ action: Actions.CREATE, feature: line, generatorValue: 'test', options: { maxTagValueLength: 2 } });
+
+      expect(change).toHaveChangeActionLengths(line.geometry.coordinates.length + 1, 0, 0);
+      expect(change).toHaveProperty('generator', 'test');
+
+      const way = change.create?.find((elm) => elm.type === 'way') as OsmWay;
+      expect(way).toBeDefined();
+      expect(way).toHaveProperty('version', 0);
+      expect(way).not.toHaveProperty('tags.dog');
+
+      const idSet = new Set<number>([way.id]);
+      expect(way.nodes).toMatchPositionOrder(line.geometry.coordinates);
+
+      // checks that each id is unique, and a matching node is created for it.
+      line.geometry.coordinates.forEach(([lon, lat], index) => {
+        const nodeInWay = way.nodes[index];
+        expect(idSet).not.toContain(nodeInWay.id);
+        idSet.add(nodeInWay.id);
+
+        const createdNode = change.create?.find((elm) => elm.id === nodeInWay.id);
+        expect(createdNode).toBeDefined();
+        expect(createdNode).toMatchObject({ lon, lat, id: nodeInWay.id });
+        expect(createdNode).toHaveProperty('version', 0);
+      });
+    });
+
+    it('should create a way with all its points and filter out some tags accordingly', function () {
+      const line: FlattenedGeoJSONLine = {
+        type: 'Feature',
+        properties: { key1: 'longValue', longKey: 'value2', key3: 'value3' },
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [35.200434, 31.7697903],
+            [35.3002677, 31.7696671],
+            [35.200611, 31.7694414],
+          ],
+        },
+      };
+
+      const change = getChangeFromLine({
+        action: Actions.CREATE,
+        feature: line,
+        generatorValue: 'test',
+        options: { maxTagKeyLength: 5, maxTagValueLength: 7 },
+      });
+
+      expect(change).toHaveChangeActionLengths(line.geometry.coordinates.length + 1, 0, 0);
+      expect(change).toHaveProperty('generator', 'test');
+
+      const way = change.create?.find((elm) => elm.type === 'way') as OsmWay;
+      expect(way).toBeDefined();
+      expect(way).toHaveProperty('version', 0);
+      expect(way).not.toHaveProperty('tags.key1');
+      expect(way).not.toHaveProperty('tags.longKey');
+      expect(way).toHaveProperty('tags.key3', 'value3');
 
       const idSet = new Set<number>([way.id]);
       expect(way.nodes).toMatchPositionOrder(line.geometry.coordinates);
