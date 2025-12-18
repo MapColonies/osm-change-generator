@@ -74,7 +74,36 @@ result:
   "delete": []
 }
 ```
+tag filtering
+```typescript
+import { getChangeFromPoint } from '@map-colonies/osm-change-generator';
 
+const point = { geometry: { type: 'Point', coordinates: [18, 17] }, type: 'Feature', properties: { key1: 'val', longKey: 'val', key2: 'longValue' } };
+
+const change = getChangeFromPoint({ action: Actions.CREATE, feature: point, options: { maxTagKeyLength: 5, maxTagValueLength: 5 } });
+
+console.log(change)
+```
+result:
+```json
+{
+  "type": "osmchange",
+  "generator": "osm_change_generator",
+  "version": "0.6",
+  "create": [
+    {
+      "id": -1,
+      "lon": 18,
+      "lat": 17,
+      "version": 0,
+      "type": "node",
+      "tags": { "key1": "val" } // longKey and longValue were filtered due to length
+    }
+  ],
+  "modify": [],
+  "delete": []
+}
+```
 ### modify
 ```typescript
 import { getChangeFromLine } from '@map-colonies/osm-change-generator';
