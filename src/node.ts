@@ -1,7 +1,8 @@
 import { OsmChange, OsmNode } from '@map-colonies/node-osm-elements';
 import { DEFAULT_ID, TAGS } from './constants';
-import { addTagsConditionally, createEmptyChange, extractCoordinateValues } from './helpers';
+import { createEmptyChange, extractCoordinateValues } from './helpers';
 import { Actions, CreateNodeArgs, FlattenedGeoJSONPoint } from './models';
+import { addTagsConditionally, tagLengthValidatorFactory } from './tag';
 import { isPrecisionAffected } from './precision';
 import { GetChangeOptions } from '.';
 
@@ -15,13 +16,19 @@ export const createNodeFromPoint = (point: FlattenedGeoJSONPoint, oldNode?: OsmN
 
   const precisionAffected = isPrecisionAffected([point.geometry.coordinates]);
 
-  const tags = addTagsConditionally(point.properties, [
-    { condition: options?.shouldHandleLOD2 === true && alt !== undefined, tags: { [TAGS.ALTITUDE]: alt } },
-    {
-      condition: precisionAffected,
-      tags: { [TAGS.GEOMETRY_PRECISION_AFFECTED]: 'true', [TAGS.PRECISED_LON]: lon, [TAGS.PRECISED_LAT]: lat },
-    },
-  ]);
+  const globalCondition = tagLengthValidatorFactory(options);
+
+  const tags = addTagsConditionally(
+    point.properties,
+    [
+      { condition: options?.shouldHandleLOD2 === true && alt !== undefined, tags: { [TAGS.ALTITUDE]: alt } },
+      {
+        condition: precisionAffected,
+        tags: { [TAGS.GEOMETRY_PRECISION_AFFECTED]: 'true', [TAGS.PRECISED_LON]: lon, [TAGS.PRECISED_LAT]: lat },
+      },
+    ],
+    globalCondition
+  );
 
   const node = createNode({
     lon,

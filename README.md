@@ -9,6 +9,13 @@ npm install --save @map-colonies/osm-change-generator
 ## usage
 call the request function based on the feature you want to create change from
 
+## options
+the following options are available with every getChange call:
+- shouldHandleLOD2 - boolean flag determening the handling of lod2 tags enrichment
+- shouldHandlePrecision - boolean flag determening the handling of precision tags enrichment
+- maxTagKeyLength - the maximum length of a tag's key. if the key exceeds the maximum value, the tag will be ignored
+- maxTagValueLength - the maximum length of a tag's value. if the value exceeds the maximum value, the tag will be ignored
+
 ### create
 ```typescript
 import { getChangeFromPoint } from '@map-colonies/osm-change-generator';
@@ -67,7 +74,36 @@ result:
   "delete": []
 }
 ```
+tag filtering
+```typescript
+import { getChangeFromPoint } from '@map-colonies/osm-change-generator';
 
+const point = { geometry: { type: 'Point', coordinates: [18, 17] }, type: 'Feature', properties: { key1: 'val', longKey: 'val', key2: 'longValue' } };
+
+const change = getChangeFromPoint({ action: Actions.CREATE, feature: point, options: { maxTagKeyLength: 5, maxTagValueLength: 5 } });
+
+console.log(change)
+```
+result:
+```json
+{
+  "type": "osmchange",
+  "generator": "osm_change_generator",
+  "version": "0.6",
+  "create": [
+    {
+      "id": -1,
+      "lon": 18,
+      "lat": 17,
+      "version": 0,
+      "type": "node",
+      "tags": { "key1": "val" } // longKey and longValue were filtered due to length
+    }
+  ],
+  "modify": [],
+  "delete": []
+}
+```
 ### modify
 ```typescript
 import { getChangeFromLine } from '@map-colonies/osm-change-generator';

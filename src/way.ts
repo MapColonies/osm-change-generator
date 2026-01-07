@@ -1,18 +1,12 @@
 import { OsmWay, OsmNode, OsmChange } from '@map-colonies/node-osm-elements';
 import { Feature, Polygon, LineString, Position } from 'geojson';
-import {
-  isFeatureCoordinatesClosed,
-  createEmptyChange,
-  extractCoordinates,
-  extractCoordinateValues,
-  addTagsConditionally,
-  removeTags,
-} from './helpers';
+import { isFeatureCoordinatesClosed, createEmptyChange, extractCoordinates, extractCoordinateValues } from './helpers';
 import { IdGenerator } from './idGenerator';
 import { Tags, Actions } from './models';
 import { createNode } from './node';
 import { TAGS, LAST_ELEMENT_INDEX } from './constants';
 import { isPrecisionAffected } from './precision';
+import { addTagsConditionally, removeTags, tagLengthValidatorFactory } from './tag';
 import { GetChangeOptions } from '.';
 
 const createWayNodes = (coordinates: Position[], idGenerator: IdGenerator, oldWay?: OsmWay, options?: GetChangeOptions): [OsmNode[], Set<number>] => {
@@ -132,7 +126,13 @@ export const createWay = <T extends Feature<Polygon | LineString, Tags>>(
 
   way.nodes = nodes;
 
-  const tags = addTagsConditionally(feature.properties, [{ condition: precisionAffected, tags: { [TAGS.GEOMETRY_PRECISION_AFFECTED]: 'true' } }]);
+  const globalConditionFn = tagLengthValidatorFactory(options);
+
+  const tags = addTagsConditionally(
+    feature.properties,
+    [{ condition: precisionAffected, tags: { [TAGS.GEOMETRY_PRECISION_AFFECTED]: 'true' } }],
+    globalConditionFn
+  );
 
   way.tags = tags;
 
